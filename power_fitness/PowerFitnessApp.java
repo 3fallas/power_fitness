@@ -2,6 +2,15 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+
+/**
+ *
+ * @author lossa
+ */
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.Date;
@@ -9,124 +18,71 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 public class PowerFitnessApp {
-    private static final String URL = "jdbc:oracle:thin:@localhost:1521:XE";
-    private static final String USUARIO = "system";
-    private static final String CONTRASEÑA = "1234";
-
-    public static void main(String[] args) throws SQLException, ParseException {
+   
+  protected Connection con;
+  
         // Conexion a la base de datos.
-        Connection conexion = DriverManager.getConnection(URL, USUARIO, CONTRASEÑA);
-        String[] opciones = { "Agregar Usuario", "Editar Usuario", "Eliminar Usuario", "Agregar Membresía",
-                "Editar Membresía", "Eliminar Membresía", "Agregar Factura", "Ver Facturas", "Agregar Rol","Editar Rol","Eliminar Rol","Agregar datos usuario","actualizar datos usuario","ver datosUsuario","eliminar datos usuario" };// Opciones para el menu
-                                                                                              // principal.
+     
+       
 
-        int seleccion = JOptionPane.showOptionDialog(null, "Bienvenido a Power Fitness. ¿Qué acción desea realizar?",
-                "Power Fitness", JOptionPane.DEFAULT_OPTION,
-                JOptionPane.PLAIN_MESSAGE, null, opciones, opciones[0]);// Menu principal.
-
-        switch (seleccion) {
-            case 0:
-                agregarUsuario(conexion);
-                break;
-            case 1:
-                editarUsuario(conexion);
-                break;
-            case 2:
-                eliminarUsuario(conexion);
-                break;
-            case 3:
-                agregarMembresia(conexion);
-                break;
-            case 4:
-                editarMembresia(conexion);
-                break;
-            case 5:
-                eliminarMembresia(conexion);
-                break;
-            case 6:
-                agregarFactura(conexion);
-                break;
-            case 7:
-                verFacturas(conexion);
-                break;
-            case 8:
-            agregarRol(conexion);
-            break;
-            case 9:
-                Editar_rol(conexion);
-                break;
-            case 10:
-                Eliminar_rol(conexion);
-                break;
-            case 11:
-                Agregar_DatosUsuario(conexion);
-                break;
-            case 12:
-                 actualizar_DatosUsuario(conexion);
-              
-                 
-                 break;
-                 
-            case 13:
-                ver_datosUsuario(conexion);
-                break;
-            case 14:
-               eliminar_DatosUsuario(conexion);
-                break;
-            
-            
-            default:
-            
-                
-            
-                break;
-        }
+protected void conectarOracle() {
+    try { 
+        String url = "jdbc:oracle:thin:@localhost:1521:XE";
+        String usuario = "system";
+        String password = "1234";
+        con = DriverManager.getConnection(url, usuario, password);
+        System.out.println("Conexión establecida.");
+    } catch (SQLException ex) {
+        System.out.println("Error al conectar a la base de datos: " + ex.getMessage());
     }
+}
 
-    // Métodos para cada opción del menú.
 
-    public static void agregarUsuario(Connection conexion) {
+
+   protected void agregarUsuario(int id, String nombre, String primerApellido, String segundoApellido, String fechaNacimiento,String correo, String contraseña, int celular,
+            String direccion, int idRol, int idMembresia, int IdDatosUsuario, DefaultTableModel uTabla) {
+        
         
         try {
-            int id = Integer.parseInt(JOptionPane.showInputDialog(null, "Ingrese el id del usuario:"));
-            String nombre = JOptionPane.showInputDialog(null, "Ingrese el nombre del usuario:");
-            String primerApellido = JOptionPane.showInputDialog(null, "Ingrese el primer apellido del usuario:");
-            String segundoApellido = JOptionPane.showInputDialog(null, "Ingrese el segundo apellido del usuario:");
-            LocalDate fechaNacimiento = LocalDate.parse(
-                    JOptionPane.showInputDialog(null, "Ingrese la fecha de nacimiento del usuario (en formato yyyy-mm-dd):"));
-            String correo = JOptionPane.showInputDialog(null, "Ingrese el correo electrónico del usuario:");
-            String contraseña = JOptionPane.showInputDialog(null, "Ingrese la contraseña del usuario:");
-            String celular = JOptionPane.showInputDialog(null, "Ingrese el número de celular del usuario (solo números):");
-            String direccion = JOptionPane.showInputDialog(null, "Ingrese la dirección del usuario:");
-            int idRol = Integer.parseInt(JOptionPane.showInputDialog(null, "Ingrese el id del rol del usuario:"));
-            int idMembresia = Integer.parseInt(JOptionPane.showInputDialog(null, "Ingrese el id de la membresía del usuario:"));
+         
             
-            CallableStatement procedimiento = conexion.prepareCall("{call agregar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+            CallableStatement procedimiento = con.prepareCall("{call agregar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
             procedimiento.setInt(1, id);
             procedimiento.setString(2, nombre);
             procedimiento.setString(3, primerApellido);
             procedimiento.setString(4, segundoApellido);
-            procedimiento.setDate(5, java.sql.Date.valueOf(fechaNacimiento));
+            procedimiento.setDate(5, java.sql.Date.valueOf(LocalDate.parse(fechaNacimiento, DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
             procedimiento.setString(6, correo);
             procedimiento.setString(7, contraseña);
-            procedimiento.setString(8, celular);
+            procedimiento.setInt(8, celular);
             procedimiento.setString(9, direccion);
             procedimiento.setInt(10, idRol);
             procedimiento.setInt(11, idMembresia);
-            
+            procedimiento.setInt(12,IdDatosUsuario);
             procedimiento.execute();
             
             JOptionPane.showMessageDialog(null, "Usuario agregado exitosamente");
+                  int filasAfectadas =  procedimiento.executeUpdate();
+ if (filasAfectadas > 0) {
+    JOptionPane.showMessageDialog(null, "El usuario ha sido agregado correctamente.");
+    Object[] fila = {id, nombre, primerApellido, segundoApellido, fechaNacimiento, correo, contraseña, celular, direccion, idRol, idMembresia, IdDatosUsuario};
+    uTabla.addRow(fila);
+            JOptionPane.showMessageDialog(null, "Usuario agregado exitosamente");
+}
+
             
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al agregar usuario: " + e.getMessage());
@@ -135,159 +91,167 @@ public class PowerFitnessApp {
         } catch (NullPointerException e) {
             JOptionPane.showMessageDialog(null, "Ingreso de datos cancelado");
         }
+   
     }
+  public void verUsuario(DefaultTableModel modeloTabla)throws SQLException{
+        Statement stm = con.createStatement();
+        ResultSet rs = stm.executeQuery("SELECT * FROM Usuario");
+      while(rs.next()){
+    Object[] fila = new Object[12];
+    fila[0] = rs.getInt("ID");
+    fila[1] = rs.getString("NOMBRE");
+    fila[2] = rs.getString("APELLIDO");
+    fila[3] = rs.getString("SEGUNDOAPELLIDO");
+    fila[4] = rs.getDate("FECHANACIMIENTO").toLocalDate();
+    fila[5] = rs.getString("CORREO");
+    fila[6] = rs.getString("CONTRASENA");
+    fila[7] = rs.getInt("TELEFONO");
+    fila[8] = rs.getString("DIRECCION");
+    fila[9] = rs.getInt("ID_ROL");
+    fila[10] = rs.getInt("ID_MENBRESIA");
+    fila[11] = rs.getInt("ID_DATOS_USUARIO");
+    modeloTabla.addRow(fila);
+    modeloTabla.fireTableDataChanged();
+}
 
-    public static void editarUsuario(Connection connection) {
+    }
+    
+
+public void editarUsuario(int id, String nombre, String primerApellido, String segundoApellido, String fechaNacimiento,
+                           String correo, String contraseña, int celular, String direccion, int idRol, int idMembresia, int idDatosUsuario) {
+    try {
+        CallableStatement cr = con.prepareCall("{call EDITAR_USUARIO(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+        cr.setInt(1, id);
+        cr.setString(2, nombre);
+        cr.setString(3, primerApellido);
+        cr.setString(4, segundoApellido);
+        cr.setDate(5, Date.valueOf(fechaNacimiento));
+        cr.setString(6, correo);
+        cr.setString(7, contraseña);
+        cr.setInt(8, celular);
+        cr.setString(9, direccion);
+        cr.setInt(10, idRol);
+        cr.setInt(11, idMembresia);
+        cr.setInt(12, idDatosUsuario);
+
+        cr.executeUpdate();
+        cr.close();
+        JOptionPane.showMessageDialog(null, "El usuario ha sido editado exitosamente.", "Editar usuario",
+                JOptionPane.INFORMATION_MESSAGE);
+    } catch (SQLException ex) {
+        Logger.getLogger(PowerFitnessApp.class.getName()).log(Level.SEVERE, null, ex);
+        JOptionPane.showMessageDialog(null, "Error al editar el usuario: " + ex.getMessage(), "Error",
+                JOptionPane.ERROR_MESSAGE);
+    }
+}
+
+public void eliminarUsuario(int usuarioId, DefaultTableModel modeloTabla) {
+    try {
+        
+        String borrar = "{ call eliminar_usuario(?) }";
+
+     
+        PreparedStatement eliminacion = con.prepareStatement(borrar);
+
+        eliminacion.setInt(1, usuarioId);
+
+       
+        eliminacion.executeUpdate();
+        
+        JOptionPane.showMessageDialog(null, "El usuario ha sido eliminado correctamente.");
+
+    } catch (SQLException ex) {
+        JOptionPane.showMessageDialog(null, "Error al eliminar el registro de la base de datos: " + ex.getMessage());
+    }
+}
+
+public void Vermembresia(DefaultTableModel modeloTabla) throws SQLException {
+    Statement stm = con.createStatement();
+    ResultSet rs = stm.executeQuery("SELECT * FROM membresias");
+    while (rs.next()) {
+        Object[] fila = new Object[6];
+        fila[0] = rs.getInt("ID");
+        fila[1] = rs.getString("NOMBRE");
+        fila[2] = rs.getString("DESCRIPCION");
+        fila[3] = rs.getDate("FECHA_INICIO").toLocalDate();
+        fila[4] = rs.getDate("FECHA_EXPIRACION").toLocalDate();
+        fila[5] = rs.getFloat("PRECIO");
+        modeloTabla.addRow(fila);
+    }
+    modeloTabla.fireTableDataChanged();
+}
+
+protected void agregarMembresia(int IDMembresia, String NombreMembresia, String Descripcion, String FechaInicio, String fechaExpiracion,
+            float precio, DefaultTableModel modeloTabla) {
+        
         try {
-            String idUsuario = JOptionPane.showInputDialog("Ingrese el ID del usuario que desea editar:");
-            String nombre = JOptionPane.showInputDialog("Ingrese el nuevo nombre:");
-            String primerApellido = JOptionPane.showInputDialog("Ingrese el nuevo primer apellido:");
-            String segundoApellido = JOptionPane.showInputDialog("Ingrese el nuevo segundo apellido:");
-            String fechaNacimiento = JOptionPane
-                    .showInputDialog("Ingrese la nueva fecha de nacimiento (formato: dd/mm/aaaa):");
-            String correo = JOptionPane.showInputDialog("Ingrese el nuevo correo electrónico:");
-            String contrasena = JOptionPane.showInputDialog("Ingrese la nueva contraseña:");
-            String celular = JOptionPane.showInputDialog("Ingrese el nuevo número de celular:");
-            String direccion = JOptionPane.showInputDialog("Ingrese la nueva dirección:");
-            String idRol = JOptionPane.showInputDialog("Ingrese el nuevo ID del rol:");
-            String idMembresia = JOptionPane.showInputDialog("Ingrese el nuevo ID de membresía:");
-            String idDatosUsuario = JOptionPane.showInputDialog("Ingrese el nuevo ID de datos de usuario:");
-
-            CallableStatement cstmt = connection.prepareCall("{call editar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
-            cstmt.setString(1, idUsuario);
-            cstmt.setString(2, nombre);
-            cstmt.setString(3, primerApellido);
-            cstmt.setString(4, segundoApellido);
-            cstmt.setString(5, fechaNacimiento);
-            cstmt.setString(6, correo);
-            cstmt.setString(7, contrasena);
-            cstmt.setString(8, celular);
-            cstmt.setString(9, direccion);
-            cstmt.setString(10, idRol);
-            cstmt.setString(11, idMembresia);
-            cstmt.setString(12, idDatosUsuario);
-
-            cstmt.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Usuario editado correctamente.");
+            CallableStatement procedimiento = con.prepareCall("{ call agregar_membresia(?, ?, ?, ?, ?, ?) }");
+            procedimiento.setInt(1, IDMembresia);
+            procedimiento.setString(2, NombreMembresia);
+            procedimiento.setString(3, Descripcion);
+            procedimiento.setDate(4, java.sql.Date.valueOf(FechaInicio));
+            procedimiento.setDate(5, java.sql.Date.valueOf(fechaExpiracion));
+            procedimiento.setDouble(6, Double.parseDouble(String.valueOf(precio)));
+            procedimiento.execute();
+            
+            JOptionPane.showMessageDialog(null, "Membresía agregada exitosamente");
+            
+            Object[] fila = {IDMembresia, NombreMembresia, Descripcion, FechaInicio, fechaExpiracion, precio};
+            modeloTabla.addRow(fila);
+            
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al editar el usuario: " + e.getMessage());
-        }
-    }
-
-    public static void eliminarUsuario(Connection conexion) throws SQLException {
-        CallableStatement cs = null;
-        try {
-            String idString = JOptionPane.showInputDialog(null, "Introduce el ID del usuario a eliminar:");
-            int id = Integer.parseInt(idString);
-
-            cs = conexion.prepareCall("{ call eliminar_usuario(?) }");
-            cs.setInt(1, id);
-            cs.execute();
-            JOptionPane.showMessageDialog(null, "El usuario ha sido eliminado correctamente.");
+            JOptionPane.showMessageDialog(null, "Error al agregar la membresía: " + e.getMessage());
         } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(null, "Debes introducir un número entero válido para el ID del usuario.");
-            e.printStackTrace();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Ha ocurrido un error al eliminar el usuario.");
-            e.printStackTrace();
-        } finally {
-            if (cs != null) {
-                cs.close();
-            }
+            JOptionPane.showMessageDialog(null, "Error: debe ingresar un número válido en el campo de precio");
+        } catch (NullPointerException e) {
+            JOptionPane.showMessageDialog(null, "Ingreso de datos cancelado");
         }
     }
 
-    public static void agregarMembresia(Connection conexion) throws SQLException {
-        String id = JOptionPane.showInputDialog("Ingrese el ID de la membresía:");
-        String nombre = JOptionPane.showInputDialog("Ingrese el nombre de la membresía:");
-        String descripcion = JOptionPane.showInputDialog("Ingrese la descripción de la membresía:");
-        String fechaInicio = JOptionPane
-                .showInputDialog("Ingrese la fecha de inicio de la membresía (formato: yyyy-MM-dd):");
-        String fechaExpiracion = JOptionPane
-                .showInputDialog("Ingrese la fecha de expiración de la membresía (formato: yyyy-MM-dd):");
-        String precio = JOptionPane.showInputDialog("Ingrese el precio de la membresía:");
 
-        CallableStatement cs = null;
-        try {
-            cs = conexion.prepareCall("{call agregar_membresia(?,?,?,?,?,?)}");
-            cs.setInt(1, Integer.parseInt(id));
-            cs.setString(2, nombre);
-            cs.setString(3, descripcion);
-            cs.setDate(4, java.sql.Date.valueOf(fechaInicio));
-            cs.setDate(5, java.sql.Date.valueOf(fechaExpiracion));
-            cs.setDouble(6, Double.parseDouble(precio));
-            cs.execute();
-            JOptionPane.showMessageDialog(null, "La membresía ha sido agregada exitosamente");
-        } catch (NumberFormatException | SQLException ex) {
-            JOptionPane.showMessageDialog(null, "Ha ocurrido un error al agregar la membresía: " + ex.getMessage());
-            conexion.rollback();
-        } finally {
-            if (cs != null) {
-                cs.close();
-            }
-        }
-    }
 
-    public static void editarMembresia(Connection conexion) throws SQLException {
-        String idString = JOptionPane.showInputDialog(null, "Ingrese el ID de la membresía:", "Editar membresía",
-                JOptionPane.QUESTION_MESSAGE);
-        int id = Integer.parseInt(idString);
 
-        String nombre = JOptionPane.showInputDialog(null, "Ingrese el nuevo nombre de la membresía:",
-                "Editar membresía", JOptionPane.QUESTION_MESSAGE);
-
-        String descripcion = JOptionPane.showInputDialog(null, "Ingrese la nueva descripción de la membresía:",
-                "Editar membresía", JOptionPane.QUESTION_MESSAGE);
-
-        String fechaInicioString = JOptionPane.showInputDialog(null,
-                "Ingrese la nueva fecha de inicio de la membresía (en formato yyyy-mm-dd):", "Editar membresía",
-                JOptionPane.QUESTION_MESSAGE);
-        Date fechaInicio = Date.valueOf(fechaInicioString);
-
-        String fechaExpiracionString = JOptionPane.showInputDialog(null,
-                "Ingrese la nueva fecha de expiración de la membresía (en formato yyyy-mm-dd):", "Editar membresía",
-                JOptionPane.QUESTION_MESSAGE);
-        Date fechaExpiracion = Date.valueOf(fechaExpiracionString);
-
-        String precioString = JOptionPane.showInputDialog(null, "Ingrese el nuevo precio de la membresía:",
-                "Editar membresía", JOptionPane.QUESTION_MESSAGE);
-        double precio = Double.parseDouble(precioString);
-
-        CallableStatement cs = conexion.prepareCall("{call EDITAR_MEMBRESIA(?, ?, ?, ?, ?, ?)}");
+public void editarMembresia(int id, String nombre, String descripcion, String fechaInicio, String fechaExpiracion,
+        float precio) throws SQLException {
+    try {
+        CallableStatement cs = con.prepareCall("{ call EDITAR_MEMBRESIA(?, ?, ?, ?, ?, ?) }");
         cs.setInt(1, id);
         cs.setString(2, nombre);
         cs.setString(3, descripcion);
-        cs.setDate(4, fechaInicio);
-        cs.setDate(5, fechaExpiracion);
-        cs.setDouble(6, precio);
+        cs.setDate(4, java.sql.Date.valueOf(fechaInicio));
+        cs.setDate(5, java.sql.Date.valueOf(fechaExpiracion));
+        cs.setDouble(6, Double.parseDouble(String.valueOf(precio)));
         cs.execute();
         cs.close();
-
         JOptionPane.showMessageDialog(null, "La membresía ha sido editada exitosamente.", "Editar membresía",
                 JOptionPane.INFORMATION_MESSAGE);
+    } catch (SQLException ex) {
+        throw new SQLException("Error al editar la membresía: " + ex.getMessage());
+    } catch (NumberFormatException ex) {
+        throw new NumberFormatException("Error: debe ingresar un número válido en el campo de precio");
+    } catch (NullPointerException ex) {
+        throw new NullPointerException("Ingreso de datos cancelado");
     }
+}
 
-    public static void eliminarMembresia(Connection conexion) throws SQLException {
-        CallableStatement cs = null;
-        try {
-            // Solicitar el ID de la membresía a eliminar
-            String idMembresiaString = JOptionPane.showInputDialog("Ingrese el ID de la membresía que desea eliminar:");
-            int idMembresia = Integer.parseInt(idMembresiaString);
 
-            cs = conexion.prepareCall("{ call eliminar_membresia(?) }");
-            cs.setInt(1, idMembresia);
-            cs.executeUpdate();
-            JOptionPane.showMessageDialog(null, "La membresía con el ID " + idMembresia + " ha sido eliminada.");
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, "Error al eliminar la membresía.");
-            ex.printStackTrace();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(null, "El ID de la membresía debe ser un número entero.");
-        } finally {
-            if (cs != null) {
-                cs.close();
-            }
-        }
+    public  void eliminarMembresia(int IDMembresia,DefaultTableModel modeloTabla  ) throws SQLException {
+           
+         try {
+        
+        
+        String borrar="{call eliminar_membresia(?)}";
+           PreparedStatement eliminacion=con.prepareStatement(borrar);
+           eliminacion.setInt(1,IDMembresia);
+           eliminacion.executeUpdate();
+           JOptionPane.showMessageDialog(null, "La membresia  ha sido eliminado correctamente.");
+         }catch (SQLException ex) {
+        JOptionPane.showMessageDialog(null, "Error al eliminar el registro de la base de datos: " + ex.getMessage());
+    }
+    
+    
+    
+    
     }
 
     public static void agregarFactura(Connection conexion) {
@@ -332,84 +296,53 @@ public class PowerFitnessApp {
         }
     }
 
-    public static void agregarRol(Connection conexion) {
-        String id = JOptionPane.showInputDialog("Ingrese el ID del rol:");
-        String nombre = JOptionPane.showInputDialog("Ingrese el nombre del rol:");
-        String descripcion = JOptionPane.showInputDialog("Ingrese la descripción del rol:");
-        String sql="{ call  AGREGAR_ROL(?,?,?)}";
-        try {
-            // Crear la sentencia SQL para insertar un nuevo registro en la tabla "ROLES"
-            
-           CallableStatement statement= conexion.prepareCall(sql);
-            
-            // Establecer los valores de los parámetros de la sentencia SQL
-            statement.setInt(1, Integer.parseInt(id));
-            statement.setString(2, nombre);
-            statement.setString(3, descripcion);
-            
-            // Ejecutar la sentencia SQL para insertar el nuevo registro
-            int filasAfectadas = statement.executeUpdate();
-            
-            if (filasAfectadas > 0) {
-                JOptionPane.showMessageDialog(null, "El rol ha sido agregado correctamente.");
-            } else {
-                JOptionPane.showMessageDialog(null, "No se ha podido agregar el rol.");
-            }
-            
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al agregar el rol: " + e.getMessage());
+public void agregarRol(int id, String nombre, String descripcion, DefaultTableModel cTabla) {
+    String sql = "{ call AGREGAR_ROL(?,?,?) }";
+    try {
+        CallableStatement statement = con.prepareCall(sql);
+        statement.setInt(1, id);
+        statement.setString(2, nombre);
+        statement.setString(3, descripcion);
+        int filasAfectadas = statement.executeUpdate();
+        if (filasAfectadas > 0) {
+            JOptionPane.showMessageDialog(null, "El rol ha sido agregado correctamente.");
+            Object[] fila = {id, nombre, descripcion};
+            cTabla.addRow(fila);
+        } else {
+            JOptionPane.showMessageDialog(null, "No se ha podido agregar el rol.");
         }
-    }
-public static void ver_rol(Connection conexion){
-
-  try {
-       
-
-        // Crear una consulta SQL
-        String sql = "SELECT ID, nombre, descripcion FROM Roles";
-
-        // Crear un objeto PreparedStatement para ejecutar la consulta
-        PreparedStatement stmt = conexion.prepareStatement(sql);
-
-        // Ejecutar la consulta y obtener los resultados
-        ResultSet rs = stmt.executeQuery();
-
-        // Mostrar los resultados
-        while (rs.next()) {
-            int rollId = rs.getInt("Id");
-            String nombre = rs.getString("nombre");
-            String descripcion = rs.getString("descripcion");
-            JOptionPane.showMessageDialog(null,"Rol #"+rollId+"\n"+"Nombre: "+nombre+"\n"+ "Obligacion:"+descripcion);
-        }
-
-        // Cerrar recursos
-        rs.close();
-        stmt.close();
     } catch (SQLException e) {
-        e.printStackTrace();
-    } finally {
-        try {
-            if (conexion!= null) {
-                conexion.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        JOptionPane.showMessageDialog(null, "Error al agregar el rol: " + e.getMessage());
     }
-
 }
-public static void Editar_rol(Connection conexion){
-           String idString = JOptionPane.showInputDialog(null, "Ingrese el ID de la membresía:", "Editar membresía",
-                JOptionPane.QUESTION_MESSAGE);
-        int id = Integer.parseInt(idString);
-        String nombre= JOptionPane.showInputDialog(null,"ingrese el nuevo nombre:");
-        String descripcion= JOptionPane.showInputDialog(null,"ingrese la nueva descripcion:");
+
+
+public void VerRoles(DefaultTableModel modeloTabla) throws SQLException {
+   
+    Statement stmt = con.createStatement();
+    ResultSet rs = stmt.executeQuery("SELECT * FROM roles");
+    while (rs.next()) {
+        Object[] fila = new Object[3];
+        fila[0] = rs.getInt("ID");
+        fila[1] = rs.getString("NOMBRE");
+        fila[2] = rs.getString("Descripcion");
+        modeloTabla.addRow(fila);
+        modeloTabla.fireTableDataChanged();
+    }
+   
+    System.out.println("Filas en la tabla: " + modeloTabla.getRowCount());
+}
+
+public  void Editar_rol(int Id,String nombre, String descripcion){
+        
+
         try {
-            CallableStatement cr= conexion.prepareCall("{call EDITAR_ROL(?,?,?)}");
-            cr.setInt(1, id);
+            CallableStatement cr= con.prepareCall("{call EDITAR_ROL(?,?,?)}");
+            cr.setInt(1, Id);
             cr.setString(2,nombre);
             cr.setString(3,descripcion);
-            cr.execute();
+            cr.executeUpdate();
+
             cr.close();
             JOptionPane.showMessageDialog(null, "La membresía ha sido editada exitosamente.", "Editar membresía",
                 JOptionPane.INFORMATION_MESSAGE);
@@ -422,26 +355,23 @@ public static void Editar_rol(Connection conexion){
 
 }
 
-public static void Eliminar_rol(Connection conexion){
-    CallableStatement cr = null;
+public void Eliminar_rol(int IdRol, DefaultTableModel modeloTabla){
     try {
-        String idRolint = JOptionPane.showInputDialog(null, "Ingrese el id del rol a eliminar:");
-        int IdRol = Integer.parseInt(idRolint);
-        cr = conexion.prepareCall("{call eliminar_rol(?)}");
-        cr.setInt(1, IdRol);
-        cr.execute();
-        JOptionPane.showMessageDialog(null,"Se eliminio con ");
+        
+        String borrar = "{ call Eliminar_rol(?) }";
+
+     
+        PreparedStatement eliminacion = con.prepareStatement(borrar);
+
+        eliminacion.setInt(1, IdRol);
+
+       
+        eliminacion.executeUpdate();
+        
+        JOptionPane.showMessageDialog(null, "El usuario ha sido eliminado correctamente.");
+
     } catch (SQLException ex) {
-        JOptionPane.showMessageDialog(null, "Error al eliminar la membresía.");
-        ex.printStackTrace();
-    } finally {
-        if (cr != null) {
-            try {
-                cr.close();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        }
+        JOptionPane.showMessageDialog(null, "Error al eliminar el registro de la base de datos: " + ex.getMessage());
     }
 }
 
@@ -512,10 +442,6 @@ public static void ver_datosUsuario(Connection conexion) throws SQLException{
     }
 }
 
-
-
-
-
 public static void actualizar_DatosUsuario(Connection conexion) throws SQLException {
     int id_usuario = Integer.parseInt(JOptionPane.showInputDialog(null, "Ingrese el ID del usuario a actualizar:"));
     double peso = Double.parseDouble(JOptionPane.showInputDialog(null, "Ingrese el nuevo peso:"));
@@ -555,11 +481,40 @@ public static void eliminar_DatosUsuario(Connection conexion) throws SQLExceptio
         JOptionPane.showMessageDialog(null, "Error al eliminar el registro: " + e.getMessage());
     }
 }
+public static void VerDATOSUsuario(Connection conexion) throws SQLException{
 
+ String idDatosUsuarioStr = JOptionPane.showInputDialog("Ingrese el ID_DATOS_USUARIO del usuario a consultar:");
+    int idDatosUsuario = Integer.parseInt(idDatosUsuarioStr);
+    String consulta = "SELECT * FROM DatosUsuarios WHERE ID_DATOS_USUARIO = ?";
+    
+    try {
+        PreparedStatement ps = conexion.prepareStatement(consulta);
+        ps.setInt(1, idDatosUsuario);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            String nombre = rs.getString("nombre");
+            String apellido = rs.getString("apellido");
+            int peso = rs.getInt("peso");
+            int altura = rs.getInt("altura");
+            Date fecha = rs.getDate("fecha");
+            
+            JOptionPane.showMessageDialog(null, "Nombre: " + nombre + "\nApellido: " + apellido
+                + "\nPeso: " + peso + "\nAltura: " + altura + "\nFecha: " + fecha);
+        }
+        
+        // Cerramos los recursos
+        rs.close();
+        ps.close();
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
 
 
 }
 
+
+}
+        
 
 
 
