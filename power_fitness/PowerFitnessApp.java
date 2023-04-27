@@ -52,38 +52,35 @@ protected void conectarOracle() {
 
 
 
-   protected void agregarUsuario(int id, String nombre, String primerApellido, String segundoApellido, String fechaNacimiento,String correo, String contraseña, int celular,
-            String direccion, int idRol, int idMembresia, int IdDatosUsuario, DefaultTableModel uTabla) {
-        
-        
+  protected void agregarUsuario(int id, String nombre, String primerApellido, String segundoApellido, 
+           LocalDate fechaNacimiento, String correo, String contraseña, int celular,
+            String direccion, int idRol, int idMembresia, DefaultTableModel uTabla) {
+
         try {
-         
-            
-            CallableStatement procedimiento = con.prepareCall("{call agregar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+            CallableStatement procedimiento = con.prepareCall("{call agregar_usuario(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
             procedimiento.setInt(1, id);
             procedimiento.setString(2, nombre);
             procedimiento.setString(3, primerApellido);
             procedimiento.setString(4, segundoApellido);
-            procedimiento.setDate(5, java.sql.Date.valueOf(LocalDate.parse(fechaNacimiento, DateTimeFormatter.ofPattern("yyyy-MM-dd"))));
+           procedimiento.setDate(5, java.sql.Date.valueOf(fechaNacimiento));
+
             procedimiento.setString(6, correo);
             procedimiento.setString(7, contraseña);
             procedimiento.setInt(8, celular);
             procedimiento.setString(9, direccion);
             procedimiento.setInt(10, idRol);
             procedimiento.setInt(11, idMembresia);
-            procedimiento.setInt(12,IdDatosUsuario);
+         
             procedimiento.execute();
             
             JOptionPane.showMessageDialog(null, "Usuario agregado exitosamente");
                   int filasAfectadas =  procedimiento.executeUpdate();
  if (filasAfectadas > 0) {
     JOptionPane.showMessageDialog(null, "El usuario ha sido agregado correctamente.");
-    Object[] fila = {id, nombre, primerApellido, segundoApellido, fechaNacimiento, correo, contraseña, celular, direccion, idRol, idMembresia, IdDatosUsuario};
+    Object[] fila = {id, nombre, primerApellido, segundoApellido, fechaNacimiento, correo, contraseña, celular, direccion, idRol, idMembresia};
     uTabla.addRow(fila);
             JOptionPane.showMessageDialog(null, "Usuario agregado exitosamente");
-}
-
-            
+} 
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al agregar usuario: " + e.getMessage());
         } catch (NumberFormatException e) {
@@ -97,7 +94,7 @@ protected void conectarOracle() {
         Statement stm = con.createStatement();
         ResultSet rs = stm.executeQuery("SELECT * FROM Usuario");
       while(rs.next()){
-    Object[] fila = new Object[12];
+    Object[] fila = new Object[11];
     fila[0] = rs.getInt("ID");
     fila[1] = rs.getString("NOMBRE");
     fila[2] = rs.getString("APELLIDO");
@@ -109,18 +106,16 @@ protected void conectarOracle() {
     fila[8] = rs.getString("DIRECCION");
     fila[9] = rs.getInt("ID_ROL");
     fila[10] = rs.getInt("ID_MENBRESIA");
-    fila[11] = rs.getInt("ID_DATOS_USUARIO");
+    
     modeloTabla.addRow(fila);
     modeloTabla.fireTableDataChanged();
 }
 
     }
-    
-
-public void editarUsuario(int id, String nombre, String primerApellido, String segundoApellido, String fechaNacimiento,
-                           String correo, String contraseña, int celular, String direccion, int idRol, int idMembresia, int idDatosUsuario) {
+public void editarUsuario(int id, String nombre, String primerApellido, String segundoApellido, LocalDate fechaNacimiento,
+                           String correo, String contraseña, int celular, String direccion, int idRol, int idMembresia) {
     try {
-        CallableStatement cr = con.prepareCall("{call EDITAR_USUARIO(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+        CallableStatement cr = con.prepareCall("{call EDITAR_USUARIO(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
         cr.setInt(1, id);
         cr.setString(2, nombre);
         cr.setString(3, primerApellido);
@@ -132,7 +127,7 @@ public void editarUsuario(int id, String nombre, String primerApellido, String s
         cr.setString(9, direccion);
         cr.setInt(10, idRol);
         cr.setInt(11, idMembresia);
-        cr.setInt(12, idDatosUsuario);
+       
 
         cr.executeUpdate();
         cr.close();
@@ -165,6 +160,7 @@ public void eliminarUsuario(int usuarioId, DefaultTableModel modeloTabla) {
     }
 }
 
+
 public void Vermembresia(DefaultTableModel modeloTabla) throws SQLException {
     Statement stm = con.createStatement();
     ResultSet rs = stm.executeQuery("SELECT * FROM membresias");
@@ -180,7 +176,6 @@ public void Vermembresia(DefaultTableModel modeloTabla) throws SQLException {
     }
     modeloTabla.fireTableDataChanged();
 }
-
 protected void agregarMembresia(int IDMembresia, String NombreMembresia, String Descripcion, String FechaInicio, String fechaExpiracion,
             float precio, DefaultTableModel modeloTabla) {
         
@@ -207,10 +202,6 @@ protected void agregarMembresia(int IDMembresia, String NombreMembresia, String 
             JOptionPane.showMessageDialog(null, "Ingreso de datos cancelado");
         }
     }
-
-
-
-
 public void editarMembresia(int id, String nombre, String descripcion, String fechaInicio, String fechaExpiracion,
         float precio) throws SQLException {
     try {
@@ -233,8 +224,6 @@ public void editarMembresia(int id, String nombre, String descripcion, String fe
         throw new NullPointerException("Ingreso de datos cancelado");
     }
 }
-
-
     public  void eliminarMembresia(int IDMembresia,DefaultTableModel modeloTabla  ) throws SQLException {
            
          try {
@@ -254,26 +243,16 @@ public void editarMembresia(int id, String nombre, String descripcion, String fe
     
     }
 
-    public static void agregarFactura(Connection conexion) {
+    public  void agregarFactura(String Fecha, float total, String descripcion, int idUsuario) {
         try {
-            // Solicitar los datos de entrada mediante JOptionPane
-            String fechaString = JOptionPane.showInputDialog(null, "Ingrese la fecha (YYYY-MM-DD):");
-            Date fecha = Date.valueOf(fechaString);
-            String totalString = JOptionPane.showInputDialog(null, "Ingrese el total:");
-            double total = Double.parseDouble(totalString);
-            String descripcion = JOptionPane.showInputDialog(null, "Ingrese la descripción:");
-            String idUsuarioString = JOptionPane.showInputDialog(null, "Ingrese el ID de usuario:");
-            int idUsuario = Integer.parseInt(idUsuarioString);
-
-            // Crear una llamada al procedimiento PL/SQL
+          
             String procedimiento = "{ call AGREGAR_FACTURA(?,?,?,?) }";
-            CallableStatement cs = conexion.prepareCall(procedimiento);
-            cs.setDate(1, fecha);
+            CallableStatement cs = con.prepareCall(procedimiento);
+            cs.setDate(1, java.sql.Date.valueOf(Fecha));
             cs.setDouble(2, total);
             cs.setString(3, descripcion);
             cs.setInt(4, idUsuario);
 
-            // Ejecutar el procedimiento
             cs.execute();
 
             JOptionPane.showMessageDialog(null, "Factura agregada correctamente.");
@@ -315,8 +294,6 @@ public void agregarRol(int id, String nombre, String descripcion, DefaultTableMo
         JOptionPane.showMessageDialog(null, "Error al agregar el rol: " + e.getMessage());
     }
 }
-
-
 public void VerRoles(DefaultTableModel modeloTabla) throws SQLException {
    
     Statement stmt = con.createStatement();
@@ -332,7 +309,6 @@ public void VerRoles(DefaultTableModel modeloTabla) throws SQLException {
    
     System.out.println("Filas en la tabla: " + modeloTabla.getRowCount());
 }
-
 public  void Editar_rol(int Id,String nombre, String descripcion){
         
 
@@ -354,7 +330,6 @@ public  void Editar_rol(int Id,String nombre, String descripcion){
         
 
 }
-
 public void Eliminar_rol(int IdRol, DefaultTableModel modeloTabla){
     try {
         
@@ -375,142 +350,147 @@ public void Eliminar_rol(int IdRol, DefaultTableModel modeloTabla){
     }
 }
 
-public static void Agregar_DatosUsuario(Connection conexion) throws SQLException {
-  int id= Integer.parseInt(JOptionPane.showInputDialog(null,"ingrese la id del dato:"));
-  float peso= Float.parseFloat(JOptionPane.showInputDialog(null,"ingrese el peso"));
-  float altura= Float.parseFloat(JOptionPane.showInputDialog(null,"ingrese la altura;"));
-  String fechaIngresada = JOptionPane.showInputDialog(null, "Ingrese la fecha (dd/MM/yyyy)");
- SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
- java.util.Date fechaUtil;
-
-try {
-    fechaUtil = dateFormat.parse(fechaIngresada);
-} catch (ParseException e) {
-    e.printStackTrace();
-    return;
-}
-java.sql.Date fecha = new java.sql.Date(fechaUtil.getTime());
-  int idusuario =Integer.parseInt(JOptionPane.showInputDialog(null,"ingrese el id de usuario"));
-  String sql="{call llenar_datos_usuario(?,?,?,?,?)}";
- try{
- CallableStatement statement= conexion.prepareCall(sql);
- statement.setInt(1, id);
- statement.setDouble(2,peso);
- statement.setDouble(3,altura);
- statement.setDate(4,fecha);
- statement.setInt(5,idusuario);
- statement.execute();
-     System.out.println("Los datos del usuario se agregaron correctamente.");
-} catch (SQLException e) {
-    System.out.println("Error al agregar los datos del usuario: " + e.getMessage());
-}
- 
- 
- }
-public static void ver_datosUsuario(Connection conexion) throws SQLException{
-
- try{   
-    String sql ="Select ID,PESO,ALTURA,FECHA,ID_USUARIO from  datos_usuario";
-
- PreparedStatement stmt = conexion.prepareStatement(sql);
-
-        // Ejecutar la consulta y obtener los resultados
-        ResultSet rs = stmt.executeQuery();
-
-        // Mostrar los resultados
-        while(rs.next()){
-                int datoId=rs.getInt("ID");
-                double PesoDATo=rs.getDouble("PESO");
-                double AlturaDATo=rs.getDouble("ALTURA");
-                Date fecha=rs.getDate("FECHA");
-                int IdUsuario=rs.getInt("ID_USUARIO");
-                 JOptionPane.showMessageDialog(null,"ID #"+datoId+"\n"+"Peso: "+PesoDATo+"\n"+ "Altura:"+AlturaDATo+"\n"+"Fecha:"+
-                         fecha+"\n"+"Id usuario"+IdUsuario);
-        }
-        rs.close();
-        stmt.close();
-        } catch (SQLException e) {
-        e.printStackTrace();
-    } finally {
-        try {
-            if (conexion!= null) {
-                conexion.close();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-}
-
-public static void actualizar_DatosUsuario(Connection conexion) throws SQLException {
-    int id_usuario = Integer.parseInt(JOptionPane.showInputDialog(null, "Ingrese el ID del usuario a actualizar:"));
-    double peso = Double.parseDouble(JOptionPane.showInputDialog(null, "Ingrese el nuevo peso:"));
-    double altura = Double.parseDouble(JOptionPane.showInputDialog(null, "Ingrese la nueva altura:"));
-    String fechaIngresada = JOptionPane.showInputDialog(null, "Ingrese la nueva fecha (dd/MM/yyyy):");
-    SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-    java.util.Date fechaUtil = null;
+protected void agregarDatosUsuario(float peso, float altura, String fecha, int id_usuario, DefaultTableModel DatosUsuario) {
     try {
-        fechaUtil = dateFormat.parse(fechaIngresada);
-    } catch (ParseException e) {
-        JOptionPane.showMessageDialog(null, "La fecha ingresada no es válida.");
-        return;
-    }
-    java.sql.Date fecha = new java.sql.Date(fechaUtil.getTime());
-    String sql = "{call actualizar_datos_usuario(?,?,?,?)}";
-    try {
-        CallableStatement statement = conexion.prepareCall(sql);
-        statement.setInt(1, id_usuario);
-        statement.setDouble(2, peso);
-        statement.setDouble(3, altura);
-        statement.setDate(4, fecha);
-        statement.execute();
-        JOptionPane.showMessageDialog(null, "Datos de usuario actualizados correctamente.");
+        CallableStatement procedimiento = con.prepareCall("{ call INSERTAR_DATOS_USUARIO(?, ?, ?, ?) }");
+        procedimiento.setFloat(1, peso);
+        procedimiento.setFloat(2, altura);
+        procedimiento.setDate(3, java.sql.Date.valueOf(fecha));
+        procedimiento.setInt(4, id_usuario);
+        procedimiento.execute();
+
+        JOptionPane.showMessageDialog(null, "Datos de usuario agregados exitosamente");
     } catch (SQLException e) {
-        JOptionPane.showMessageDialog(null, "Error al actualizar los datos del usuario: " + e.getMessage());
+        JOptionPane.showMessageDialog(null, "Error al agregar los datos de usuario: " + e.getMessage());
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(null, "Error: debe ingresar números válidos en los campos de peso y altura");
+    } catch (NullPointerException e) {
+        JOptionPane.showMessageDialog(null, "Ingreso de datos cancelado");
     }
 }
-public static void eliminar_DatosUsuario(Connection conexion) throws SQLException {
-    int id_registro = Integer.parseInt(JOptionPane.showInputDialog(null, "Ingrese el ID del registro a eliminar:"));
-    String sql = "{call eliminar_datos_usuario(?)}";
-    try {
-        CallableStatement statement = conexion.prepareCall(sql);
-        statement.setInt(1, id_registro);
-        statement.execute();
-        JOptionPane.showMessageDialog(null, "Registro eliminado correctamente.");
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(null, "Error al eliminar el registro: " + e.getMessage());
+public void VerUsuarioDatos(DefaultTableModel DatosUsuario) throws SQLException {
+    Statement stmt = con.createStatement();
+    ResultSet rs = stmt.executeQuery("SELECT * FROM vista_datos_usuario");
+    while (rs.next()) {
+        Object[] fila = new Object[7];
+        fila[0] = rs.getInt("ID_DATOS_USUARIO");
+        fila[1] = rs.getString("nombre");
+        fila[2] = rs.getString("apellido");
+        fila[3] = rs.getString("segundoapellido");
+        fila[4] = rs.getFloat("peso");
+        fila[5] = rs.getFloat("altura");
+        fila[6] = rs.getDate("fecha");
+        DatosUsuario.addRow(fila);
+        DatosUsuario.fireTableDataChanged();
     }
 }
-public static void VerDATOSUsuario(Connection conexion) throws SQLException{
+public void actualizarDatosUsuario(int id, float peso, float altura, String fecha) throws SQLException {
+    try (CallableStatement stmt = con.prepareCall("{call ACTUALIZAR_DATOS_USUARIO(?,?,?,?)}")) {
+        stmt.setInt(1, id);
+        stmt.setFloat(2, peso);
+        stmt.setFloat(3, altura);
+         stmt.setDate(4, java.sql.Date.valueOf(fecha));
+        stmt.executeUpdate();
+        JOptionPane.showMessageDialog(null, "Los datos del usuario han sido actualizados correctamente.");
+    } catch (SQLException ex) {
+        JOptionPane.showMessageDialog(null, "Error al actualizar los datos del usuario: " + ex.getMessage());
+    }
+}
+public void eliminarDatosUsuario(int id) throws SQLException {
+   try{
+    CallableStatement stmt = con.prepareCall("{call ELIMINAR_DATOS_USUARIO(?)}");
+    stmt.setInt(1, id);
+    stmt.executeUpdate();
+    JOptionPane.showMessageDialog(null, "El usuario ha sido eliminado correctamente.");
+}
+catch (SQLException ex) {
+        JOptionPane.showMessageDialog(null, "Error al eliminar el registro de la base de datos: " + ex.getMessage());
+    }
 
- String idDatosUsuarioStr = JOptionPane.showInputDialog("Ingrese el ID_DATOS_USUARIO del usuario a consultar:");
-    int idDatosUsuario = Integer.parseInt(idDatosUsuarioStr);
-    String consulta = "SELECT * FROM DatosUsuarios WHERE ID_DATOS_USUARIO = ?";
-    
-    try {
-        PreparedStatement ps = conexion.prepareStatement(consulta);
-        ps.setInt(1, idDatosUsuario);
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            String nombre = rs.getString("nombre");
-            String apellido = rs.getString("apellido");
-            int peso = rs.getInt("peso");
-            int altura = rs.getInt("altura");
-            Date fecha = rs.getDate("fecha");
-            
-            JOptionPane.showMessageDialog(null, "Nombre: " + nombre + "\nApellido: " + apellido
-                + "\nPeso: " + peso + "\nAltura: " + altura + "\nFecha: " + fecha);
-        }
+}
+
+
+
+public void AgregarEquipoGimnasio(int IDequipo, String tipo, String marca, float peso, float precio, String nombre,int cantidad, DefaultTableModel ProductoTabla) throws SQLException {
         
-        // Cerramos los recursos
-        rs.close();
-        ps.close();
-    } catch (SQLException e) {
-        e.printStackTrace();
+        try {
+            CallableStatement procedimiento = con.prepareCall("{ call agregar_equipo_gimnasio(?, ?, ?, ?, ?, ?,?) }");
+            procedimiento.setInt(1, IDequipo);
+            procedimiento.setString(2, tipo);
+            procedimiento.setString(3, marca);
+            procedimiento.setFloat(4, peso);
+            procedimiento.setFloat(5, precio);
+            procedimiento.setString(6, nombre);
+            procedimiento.setInt(7, cantidad);
+            procedimiento.execute();
+            
+            JOptionPane.showMessageDialog(null, "Equipo agregado exitosamente");
+            
+            Object[] fila = {IDequipo, tipo, marca, peso, precio, nombre,cantidad};
+            ProductoTabla.addRow(fila);
+            
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al agregar el equipo: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Error: debe ingresar un número válido en el campo de precio");
+        } catch (NullPointerException e) {
+            JOptionPane.showMessageDialog(null, "Ingreso de datos cancelado");
+        }
     }
-
+public void VerEquipoGimmnasio(DefaultTableModel ProductoTabla) throws SQLException{
+    try {
+        Statement stmt = con.createStatement();
+        ResultSet rs = stmt.executeQuery("select * from equipos_gimnasio");
+        while(rs.next()){
+            Object[] fila = new Object[7];
+            fila[0]= rs.getInt("ID_EQUIPO");
+            fila[1]= rs.getString("TIPO");
+            fila[2]= rs.getString("MARCA");
+            fila[3]= rs.getFloat("PESO");
+            fila[4]= rs.getFloat("PRECIO");
+            fila[5]= rs.getString("NOMBRE");
+            fila[6]= rs.getInt("CANTIDAD");
+            ProductoTabla.addRow(fila);
+            ProductoTabla.fireTableDataChanged();
+        }
+    } catch (SQLException e) {
+        System.out.println("Error al ejecutar la consulta SQL: " + e.getMessage());
+    }
+}
+public void EliminarEquipoGimnnasio(int ID_EQUIPO,DefaultTableModel ProductoTabla) throws SQLException{
+   
+   try{ 
+    String borrar= "{call eliminar_equipo_gimnasio(?)}";
+    PreparedStatement eliminar=con.prepareCall(borrar);
+    eliminar.setInt(1, ID_EQUIPO);
+    eliminar.executeUpdate();
+    JOptionPane.showMessageDialog(null, "se eliminno el producto");
+    
+   } catch(SQLException ex){
+    JOptionPane.showMessageDialog(null, "Error al eliminar equipo de la base de datos: " + ex.getMessage());
+   }
 
 }
+public void actualizarEquipoGimnasio(int idEquipo, String tipo, String marca, float peso, float precio, String nombre, int cantidad) {
+    try {
+        CallableStatement cs = con.prepareCall("{ call actualizar_equipo_gimnasio(?, ?, ?, ?, ?, ?,?) }");
+        cs.setInt(1, idEquipo);
+        cs.setString(2, tipo);
+        cs.setString(3, marca);
+        cs.setFloat(4, peso);
+        cs.setFloat(5, precio);
+        cs.setString(6, nombre);
+        cs.setInt(7, cantidad);
+        cs.executeUpdate();
+        JOptionPane.showMessageDialog(null, "El equipo se ha actualizado correctamente.");
+    } catch (SQLException e) {
+        JOptionPane.showMessageDialog(null, "Error al actualizar el equipo: " + e.getMessage());
+    } catch (NumberFormatException e) {
+        JOptionPane.showMessageDialog(null, "Error: debe ingresar un número válido en el campo de precio");
+    }
+}
+
+
 
 
 }
